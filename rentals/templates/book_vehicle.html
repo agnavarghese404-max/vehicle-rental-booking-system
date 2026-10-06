@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Book {{ vehicle.name }} | VehicleRent{% endblock %}
+
+{% block content %}
+<a href="{% url 'vehicle_detail' vehicle.pk %}" class="btn btn-outline-secondary btn-sm mb-3">← Back to vehicle</a>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="fw-bold mb-1">Book {{ vehicle.name }}</h2>
+                <p class="text-muted mb-1">{{ vehicle.brand }} {{ vehicle.model }}</p>
+                <p class="fw-bold mb-4">{{ vehicle.price_per_day }} per day</p>
+
+                {% if booking %}
+                    <div class="alert alert-success">
+                        <h5 class="alert-heading">Booking successful!</h5>
+                        <p class="mb-1"><strong>Booking ID:</strong> {{ booking.id }}</p>
+                        <p class="mb-1"><strong>From:</strong> {{ booking.start_date }}</p>
+                        <p class="mb-1"><strong>To:</strong> {{ booking.end_date }}</p>
+                        <p class="mb-1"><strong>Total amount:</strong> {{ booking.total_amount }}</p>
+                        <p class="mb-0"><strong>Status:</strong> {{ booking.status }}</p>
+                    </div>
+                    <p class="text-muted small">Payment is collected when you pick up the vehicle.</p>
+                    <a href="{% url 'vehicles' %}" class="btn btn-primary w-100">Back to vehicles</a>
+
+                {% else %}
+                    {% if errors %}
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                {% for field, messages in errors.items %}
+                                    {% for message in messages %}
+                                        <li>{{ message }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">Start date</label>
+                            <input type="date" name="start_date" value="{{ form_data.start_date }}" class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">End date</label>
+                            <input type="date" name="end_date" value="{{ form_data.end_date }}" class="form-control">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Confirm booking</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

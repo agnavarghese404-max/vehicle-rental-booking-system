@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Home | VehicleRent{% endblock %}
+
+{% block content %}
+<section class="text-center py-5">
+    <h1 class="fw-bold">Find Your Perfect Vehicle</h1>
+    <p class="lead">Choose a vehicle and book it for your journey.</p>
+
+    <form method="get" action="{% url 'vehicles' %}" class="row g-2 justify-content-center mt-4">
+        <div class="col-12 col-md-5">
+            <input type="text" name="q" class="form-control" placeholder="Search by vehicle name or brand">
+        </div>
+        <div class="col-12 col-md-3">
+            <select name="type" class="form-select">
+                <option value="">All Vehicle Types</option>
+                <option value="car">Cars</option>
+                <option value="bike">Bikes</option>
+                <option value="suv">SUVs</option>
+                <option value="van">Vans</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Search</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

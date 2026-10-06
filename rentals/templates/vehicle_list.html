@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Vehicles | VehicleRent{% endblock %}
+
+{% block content %}
+<h2 class="fw-bold mb-4">Our Vehicles</h2>
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-12 col-md-5">
+        <input type="text" name="q" value="{{ query }}" class="form-control"
+               placeholder="Search by vehicle name or brand">
+    </div>
+    <div class="col-12 col-md-3">
+        <select name="type" class="form-select">
+            <option value="">All Vehicle Types</option>
+            <option value="car" {% if selected_type == 'car' %}selected{% endif %}>Cars</option>
+            <option value="bike" {% if selected_type == 'bike' %}selected{% endif %}>Bikes</option>
+            <option value="suv" {% if selected_type == 'suv' %}selected{% endif %}>SUVs</option>
+            <option value="van" {% if selected_type == 'van' %}selected{% endif %}>Vans</option>
+        </select>
+    </div>
+    <div class="col-12 col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Search</button>
+    </div>
+</form>
+
+<div class="row g-4">
+    {% for vehicle in vehicles %}
+    <div class="col-12 col-sm-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            {% if vehicle.image %}
+                <img src="{{ vehicle.image.url }}" class="card-img-top" alt="{{ vehicle.name }}"
+                     style="height: 200px; object-fit: cover;">
+            {% else %}
+                <div class="bg-secondary text-white d-flex align-items-center justify-content-center"
+                     style="height: 200px;">No image</div>
+            {% endif %}
+
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ vehicle.name }}</h5>
+                <p class="card-text text-muted mb-1">{{ vehicle.brand }} {{ vehicle.model }}</p>
+                <p class="mb-2"><span class="badge bg-info text-dark">{{ vehicle.get_vehicle_type_display }}</span></p>
+                <p class="fw-bold mb-2">{{ vehicle.price_per_day }} per day</p>
+
+                <div class="mb-3">
+                    {% if vehicle.is_available %}
+                        <span class="badge bg-success">Available</span>
+                    {% else %}
+                        <span class="badge bg-danger">Not available</span>
+                    {% endif %}
+                </div>
+
+                <a href="{% url 'vehicle_detail' vehicle.pk %}" class="btn btn-outline-primary mt-auto stretched-link">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">No vehicles found.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

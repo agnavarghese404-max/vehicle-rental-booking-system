@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}{{ vehicle.name }} | VehicleRent{% endblock %}
+
+{% block content %}
+<a href="{% url 'vehicles' %}" class="btn btn-outline-secondary btn-sm mb-3">← Back to vehicles</a>
+
+<div class="row g-4">
+    <div class="col-12 col-md-7">
+        {% if vehicle.image %}
+            <img src="{{ vehicle.image.url }}" class="img-fluid rounded shadow-sm w-100"
+                 alt="{{ vehicle.name }}" style="max-height: 420px; object-fit: cover;">
+        {% else %}
+            <div class="bg-secondary text-white d-flex align-items-center justify-content-center rounded"
+                 style="height: 320px;">No image</div>
+        {% endif %}
+    </div>
+
+    <div class="col-12 col-md-5">
+        <h2 class="fw-bold">{{ vehicle.name }}</h2>
+        <p class="text-muted fs-5 mb-2">{{ vehicle.brand }} {{ vehicle.model }}</p>
+        <p><span class="badge bg-info text-dark">{{ vehicle.get_vehicle_type_display }}</span></p>
+
+        <h3 class="fw-bold my-3">{{ vehicle.price_per_day }} <small class="text-muted fs-6">per day</small></h3>
+
+        <p>
+            {% if vehicle.is_available %}
+                <span class="badge bg-success">Available</span>
+            {% else %}
+                <span class="badge bg-danger">Not available</span>
+            {% endif %}
+        </p>
+
+        {% if vehicle.is_available %}
+            <a href="{% url 'book_vehicle' vehicle.pk %}" class="btn btn-primary btn-lg w-100 mt-2">Book Now</a>
+        {% else %}
+            <button class="btn btn-secondary btn-lg w-100 mt-2" disabled>Currently unavailable</button>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
