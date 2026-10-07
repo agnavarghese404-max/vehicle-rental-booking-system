@@ -24,4 +24,72 @@
         </div>
     </form>
 </section>
+
+<section class="mb-5">
+    <h3 class="fw-bold mb-3">Browse by Category</h3>
+    <div class="row g-3 text-center">
+        <div class="col-6 col-md-3">
+            <a href="{% url 'vehicles' %}?type=car" class="card shadow-sm h-100 text-decoration-none text-dark">
+                <div class="card-body py-4">
+                    <div class="fs-1">🚗</div>
+                    <h5 class="mb-0 mt-2">Cars</h5>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{% url 'vehicles' %}?type=bike" class="card shadow-sm h-100 text-decoration-none text-dark">
+                <div class="card-body py-4">
+                    <div class="fs-1">🏍️</div>
+                    <h5 class="mb-0 mt-2">Bikes</h5>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{% url 'vehicles' %}?type=suv" class="card shadow-sm h-100 text-decoration-none text-dark">
+                <div class="card-body py-4">
+                    <div class="fs-1">🚙</div>
+                    <h5 class="mb-0 mt-2">SUVs</h5>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{% url 'vehicles' %}?type=van" class="card shadow-sm h-100 text-decoration-none text-dark">
+                <div class="card-body py-4">
+                    <div class="fs-1">🚐</div>
+                    <h5 class="mb-0 mt-2">Vans</h5>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+{% if featured_vehicles %}
+<section class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold mb-0">Featured Vehicles</h3>
+        <a href="{% url 'vehicles' %}">View all</a>
+    </div>
+    <div class="row g-4">
+        {% for vehicle in featured_vehicles %}
+        <div class="col-12 col-sm-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                {% if vehicle.image %}
+                    <img src="{{ vehicle.image.url }}" class="card-img-top" alt="{{ vehicle.name }}"
+                         style="height: 200px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center"
+                         style="height: 200px;">No image</div>
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ vehicle.name }}</h5>
+                    <p class="card-text text-muted mb-1">{{ vehicle.brand }} {{ vehicle.model }}</p>
+                    <p class="fw-bold mb-3">{{ vehicle.price_per_day }} per day</p>
+                    <a href="{% url 'vehicle_detail' vehicle.pk %}" class="btn btn-outline-primary mt-auto stretched-link">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
 {% endblock %}

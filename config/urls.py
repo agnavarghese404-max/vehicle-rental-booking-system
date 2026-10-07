@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rentals.views import home, vehicle_list_page, vehicle_detail_page, register_page, login_page, logout_page, book_vehicle_page,  my_bookings_page,   cancel_booking_page
+from rentals.views import home, vehicle_list_page, vehicle_detail_page, register_page, login_page, logout_page, book_vehicle_page,  my_bookings_page,   cancel_booking_page, dashboard_page
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', home, name='home'),
@@ -28,6 +30,8 @@ urlpatterns = [
     path('logout/', logout_page, name='logout'),
     path('my-bookings/', my_bookings_page, name='my_bookings'),
     path('my-bookings/<int:pk>/cancel/', cancel_booking_page, name='cancel_booking'),
+    path('dashboard/', dashboard_page, name='dashboard'),
     path('admin/', admin.site.urls),
     path('api/', include('rentals.urls')),
 ]
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Sum
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -315,11 +315,14 @@ class CustomerDetailAPIView(APIView):
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 
 
 def home(request):
-    return render(request, 'home.html')
+    featured_vehicles = Vehicle.objects.filter(is_available=True).order_by('-id')[:3]
+    return render(request, 'home.html', {'featured_vehicles': featured_vehicles})
 
+    
 def vehicle_list_page(request):
     vehicles = Vehicle.objects.all()
 
@@ -444,3 +447,20 @@ def cancel_booking_page(request, pk):
         booking.save()
 
     return redirect('my_bookings')
+
+@staff_member_required(login_url='login')
+def dashboard_page(request):
+    revenue = Booking.objects.filter(
+        status__in=['confirmed', 'completed']
+    ).aggregate(total=Sum('total_amount'))['total'] or 0
+
+    context = {
+        'total_vehicles': Vehicle.objects.count(),
+        'available_vehicles': Vehicle.objects.filter(is_available=True).count(),
+        'total_customers': Customer.objects.count(),
+        'total_bookings': Booking.objects.count(),
+        'pending_bookings': Booking.objects.filter(status='pending').count(),
+        'revenue': revenue,
+        'recent_bookings': Booking.objects.select_related('customer', 'vehicle').order_by('-created_at')[:5],
+    }
+    return render(request, 'dashboard.html', context)

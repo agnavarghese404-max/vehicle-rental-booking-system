@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard | VehicleRent{% endblock %}
+
+{% block content %}
+<h2 class="fw-bold mb-4">Owner Dashboard</h2>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1">Total Vehicles</p>
+                <h3 class="fw-bold mb-0">{{ total_vehicles }}</h3>
+                <small class="text-muted">{{ available_vehicles }} available</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1">Total Customers</p>
+                <h3 class="fw-bold mb-0">{{ total_customers }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1">Total Bookings</p>
+                <h3 class="fw-bold mb-0">{{ total_bookings }}</h3>
+                <small class="text-muted">{{ pending_bookings }} pending</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card text-center shadow-sm h-100 border-success">
+            <div class="card-body">
+                <p class="text-muted mb-1">Revenue</p>
+                <h3 class="fw-bold text-success mb-0">{{ revenue }}</h3>
+                <small class="text-muted">Confirmed and completed</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="fw-bold mb-3">Recent Bookings</h4>
+
+{% if recent_bookings %}
+<div class="table-responsive">
+    <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Vehicle</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Total</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in recent_bookings %}
+            <tr>
+                <td>{{ booking.id }}</td>
+                <td>{{ booking.customer.name }}</td>
+                <td>{{ booking.vehicle.name }}</td>
+                <td>{{ booking.start_date }}</td>
+                <td>{{ booking.end_date }}</td>
+                <td>{{ booking.total_amount }}</td>
+                <td>{{ booking.status|title }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">No bookings yet.</div>
+{% endif %}
+
+<a href="{% url 'admin:rentals_booking_changelist' %}" class="btn btn-primary">Manage bookings in admin</a>
+{% endblock %}
