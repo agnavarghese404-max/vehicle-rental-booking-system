@@ -2,6 +2,37 @@
 {% block title %}Book {{ vehicle.name }} | VehicleRent{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+
+<style>
+    .flatpickr-calendar.inline { margin: 0 auto; box-shadow: none; border: 1px solid #dee2e6; }
+    .flatpickr-day:not(.flatpickr-disabled):not(.selected):not(.startRange):not(.endRange):not(.inRange) {
+        background: #e9f7ef;
+        border-color: #e9f7ef;
+    }
+    .flatpickr-day.booked,
+    .flatpickr-day.booked:hover {
+        background: #f8d7da !important;
+        border-color: #f8d7da !important;
+        color: #842029 !important;
+        text-decoration: line-through;
+    }
+    .flatpickr-day.flatpickr-disabled:not(.booked) { color: #adb5bd; }
+    .flatpickr-day.selected,
+    .flatpickr-day.startRange,
+    .flatpickr-day.endRange {
+        background: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+    }
+    .flatpickr-day.inRange {
+        background: #cfe2ff;
+        border-color: #cfe2ff;
+        box-shadow: -5px 0 0 #cfe2ff, 5px 0 0 #cfe2ff;
+    }
+    .legend-box { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 4px; vertical-align: middle; }
+</style>
+
 <a href="{% url 'vehicle_detail' vehicle.pk %}" class="btn btn-outline-secondary btn-sm mb-3">← Back to vehicle</a>
 
 <div class="row justify-content-center">
@@ -37,21 +68,109 @@
                         </div>
                     {% endif %}
 
+                    <p class="mb-2">Choose your <strong>pickup date</strong>, then your <strong>return date</strong>.</p>
+
+                    <input type="text" id="calendar" class="d-none" data-price="{{ vehicle.price_per_day }}">
+
+                    <div class="text-center small mt-3 mb-3">
+                        <span class="me-3"><span class="legend-box" style="background:#e9f7ef;border:1px solid #b7e4c7;"></span>Available</span>
+                        <span class="me-3"><span class="legend-box" style="background:#f8d7da;"></span>Booked</span>
+                        <span><span class="legend-box" style="background:#0d6efd;"></span>Your dates</span>
+                    </div>
+
+                    <div id="message" class="text-muted text-center mb-3">Choose your pickup date.</div>
+
+                    <div id="summary" class="alert alert-primary d-none">
+                        <div><strong>Pickup:</strong> <span id="sum-start"></span></div>
+                        <div><strong>Return:</strong> <span id="sum-end"></span></div>
+                        <div><strong>Days:</strong> <span id="sum-days"></span></div>
+                        <div class="fs-5"><strong>Total:</strong> <span id="sum-total"></span></div>
+                    </div>
+
                     <form method="post">
                         {% csrf_token %}
-
-                        <div class="mb-3">
-                            <label class="form-label">Start date</label>
-                            <input type="date" name="start_date" value="{{ form_data.start_date }}" class="form-control">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">End date</label>
-                            <input type="date" name="end_date" value="{{ form_data.end_date }}" class="form-control">
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100">Confirm booking</button>
+                        <input type="hidden" name="start_date" id="start_date">
+                        <input type="hidden" name="end_date" id="end_date">
+                        <button type="submit" id="confirm-btn" class="btn btn-primary w-100" disabled>Confirm booking</button>
                     </form>
+
+                    {{ booked_ranges|json_script:"booked-ranges" }}
+                    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+                    <script>
+                    (function () {
+                        var ranges = JSON.parse(document.getElementById('booked-ranges').textContent);
+                        var price = parseFloat(document.getElementById('calendar').dataset.price);
+
+                        var startInput = document.getElementById('start_date');
+                        var endInput = document.getElementById('end_date');
+                        var button = document.getElementById('confirm-btn');
+                        var message = document.getElementById('message');
+                        var summary = document.getElementById('summary');
+
+                        function isBooked(iso) {
+                            return ranges.some(function (r) { return iso >= r.from && iso <= r.to; });
+                        }
+
+                        function resetSelection(text) {
+                            startInput.value = '';
+                            endInput.value = '';
+                            button.disabled = true;
+                            summary.classList.add('d-none');
+                            message.textContent = text;
+                        }
+
+                        flatpickr('#calendar', {
+                            inline: true,
+                            mode: 'range',
+                            minDate: 'today',
+                            dateFormat: 'Y-m-d',
+                            showMonths: 1,
+                            disable: ranges,
+                            onDayCreate: function (dObj, dStr, fp, dayElem) {
+                                if (isBooked(fp.formatDate(dayElem.dateObj, 'Y-m-d'))) {
+                                    dayElem.classList.add('booked');
+                                }
+                            },
+                            onChange: function (dates, str, fp) {
+                                if (dates.length === 0) {
+                                    resetSelection('Choose your pickup date.');
+                                    return;
+                                }
+                                if (dates.length === 1) {
+                                    resetSelection('Now choose your return date.');
+                                    return;
+                                }
+
+                                var start = fp.formatDate(dates[0], 'Y-m-d');
+                                var end = fp.formatDate(dates[1], 'Y-m-d');
+
+                                if (start === end) {
+                                    fp.clear();
+                                    resetSelection('The return date must be after the pickup date. Please choose again.');
+                                    return;
+                                }
+
+                                var clash = ranges.some(function (r) { return r.from < end && r.to >= start; });
+                                if (clash) {
+                                    fp.clear();
+                                    resetSelection('Those dates include a booked day. Please choose different dates.');
+                                    return;
+                                }
+
+                                var days = Math.round((dates[1] - dates[0]) / 86400000);
+                                startInput.value = start;
+                                endInput.value = end;
+                                document.getElementById('sum-start').textContent = start;
+                                document.getElementById('sum-end').textContent = end;
+                                document.getElementById('sum-days').textContent = days;
+                                document.getElementById('sum-total').textContent = (days * price).toFixed(2);
+                                summary.classList.remove('d-none');
+                                message.textContent = '';
+                                button.disabled = false;
+                            }
+                        });
+                    })();
+                    </script>
                 {% endif %}
             </div>
         </div>

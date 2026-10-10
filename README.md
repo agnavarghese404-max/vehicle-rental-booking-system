@@ -10,21 +10,25 @@ The booking engine prevents double bookings, calculates the rental duration and 
 |---|---|
 | ![Home](screenshots/home.jpeg) | ![Vehicles](screenshots/vehicle.png) |
 
-| Vehicle details | Booking confirmation |
+| Vehicle details | Availability calendar |
 |---|---|
-| ![Details](screenshots/vehicle_detail.png) | ![Booking](screenshots/booking.png) |
+| ![Details](screenshots/vehicle_detail.png) | ![Calendar](screenshots/calendar.png) |
 
 | My bookings | Owner dashboard |
 |---|---|
 | ![My bookings](screenshots/mybookingss.png) | ![Dashboard](screenshots/owner_dashboard.png) |
 
+**Owner: manage bookings**
+
+![Owner bookings](screenshots/owner_booking.png)
 ## Features
 
 **Customers**
 - Browse vehicles as cards, with search by name or brand and a vehicle type filter
 - Vehicle detail page with price and availability
 - Register and log in (session-based authentication)
-- Book a vehicle by choosing start and end dates, with the total cost shown instantly
+- Book a vehicle from an availability calendar: booked days are shown in red, free days in green, and the chosen dates in blue, with the number of days and the total cost shown instantly
+- Calendar blocks bookings that would cross an already-booked day (the server still validates every booking)
 - View only their own bookings and cancel pending or confirmed ones (cancel and rebook to change dates)
 
 **Booking rules**
@@ -34,10 +38,11 @@ The booking engine prevents double bookings, calculates the rental duration and 
 - Rental duration and total amount are calculated automatically
 - Booking statuses: Pending, Confirmed, Cancelled, Completed
 
-**Owner**
-- Django admin with columns, filters, and search for vehicles, customers, and bookings
-- Bulk actions to mark bookings as Confirmed, Completed, or Cancelled
-- Staff-only dashboard with total vehicles, customers, bookings, and revenue (confirmed and completed bookings only), plus recent bookings
+**Owner and staff roles**
+- Dashboard for staff and the owner with total vehicles, customers, bookings, and revenue (confirmed and completed bookings only), plus recent bookings
+- Owner-only Manage Bookings page: filter by status and confirm, complete, or cancel bookings with one click (only valid status changes are allowed, so a cancelled booking can't be revived)
+- Staff accounts can view the dashboard but cannot change any data; customers have access to the website only
+- Django admin with columns, filters, search, and bulk actions for vehicles, customers, and bookings
 
 **REST API** (under `/api/`)
 - Full CRUD for vehicles, customers, and bookings
@@ -119,7 +124,7 @@ rentals/    App with models, API views, serializers, permissions, website views,
 
 - Online payment (currently payment is collected at pickup)
 - Email notifications for booking confirmation
-- Date-based availability search on the vehicle list
+- Search the vehicle list by available dates
 - Deployment with a live demo link
 
 ## Author

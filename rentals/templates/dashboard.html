@@ -77,5 +77,14 @@
 <div class="alert alert-info">No bookings yet.</div>
 {% endif %}
 
-<a href="{% url 'admin:rentals_booking_changelist' %}" class="btn btn-primary">Manage bookings in admin</a>
+{% if user.is_superuser %}
+<h4 class="fw-bold mt-4 mb-3">Manage</h4>
+<div class="d-flex flex-wrap gap-2">
+    <a href="{% url 'owner_bookings' %}" class="btn btn-primary">Manage Bookings</a>
+    <a href="{% url 'admin:rentals_vehicle_changelist' %}" class="btn btn-outline-primary">Manage Vehicles</a>
+    <a href="{% url 'admin:rentals_vehicle_add' %}" class="btn btn-outline-success">+ Add Vehicle</a>
+    <a href="{% url 'admin:rentals_customer_changelist' %}" class="btn btn-outline-secondary">View Customers</a>
+</div>
+{% endif %}
+
 {% endblock %}

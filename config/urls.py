@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rentals.views import home, vehicle_list_page, vehicle_detail_page, register_page, login_page, logout_page, book_vehicle_page,  my_bookings_page,   cancel_booking_page, dashboard_page
+from rentals.views import home, vehicle_list_page, vehicle_detail_page, register_page, login_page, logout_page, book_vehicle_page,  my_bookings_page,   cancel_booking_page, dashboard_page, owner_bookings_page, owner_booking_action
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -31,6 +31,8 @@ urlpatterns = [
     path('my-bookings/', my_bookings_page, name='my_bookings'),
     path('my-bookings/<int:pk>/cancel/', cancel_booking_page, name='cancel_booking'),
     path('dashboard/', dashboard_page, name='dashboard'),
+    path('dashboard/bookings/', owner_bookings_page, name='owner_bookings'),
+    path('dashboard/bookings/<int:pk>/<str:action>/', owner_booking_action, name='owner_booking_action'),
     path('admin/', admin.site.urls),
     path('api/', include('rentals.urls')),
 ]

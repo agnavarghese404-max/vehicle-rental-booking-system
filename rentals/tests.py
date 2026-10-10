@@ -247,3 +247,126 @@ class WebsitePagesTest(TestCase):
         self.client.login(username='staffuser', password='testpass123')
         response = self.client.get('/dashboard/')
         self.assertEqual(response.status_code, 200)
+
+class OwnerPagesTest(TestCase):
+
+    def setUp(self):
+        self.owner = User.objects.create_superuser(
+            username='owner1', password='testpass123'
+        )
+        self.staff = User.objects.create_user(
+            username='staff1', password='testpass123', is_staff=True
+        )
+        self.user = User.objects.create_user(
+            username='cust1', password='testpass123'
+        )
+        self.customer = Customer.objects.create(
+            user=self.user,
+            name='Owner Test Customer',
+            email='ownertest@example.com',
+            phone='9876543299',
+            driving_license='OWN123'
+        )
+        self.vehicle = Vehicle.objects.create(
+            vehicle_type='car',
+            name='Owner Test Car',
+            brand='Brand',
+            model='Model',
+            registration_number='OWN001',
+            price_per_day=1000,
+            is_available=True
+        )
+        self.booking = Booking.objects.create(
+            customer=self.customer,
+            vehicle=self.vehicle,
+            start_date='2027-06-01',
+            end_date='2027-06-03',
+            status='pending',
+            total_amount=2000
+        )
+
+    def test_owner_can_open_manage_bookings(self):
+        self.client.login(username='owner1', password='testpass123')
+        response = self.client.get('/dashboard/bookings/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_staff_cannot_open_manage_bookings(self):
+        self.client.login(username='staff1', password='testpass123')
+        response = self.client.get('/dashboard/bookings/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_owner_can_confirm_pending_booking(self):
+        self.client.login(username='owner1', password='testpass123')
+        self.client.post(f'/dashboard/bookings/{self.booking.id}/confirm/')
+        self.booking.refresh_from_db()
+        self.assertEqual(self.booking.status, 'confirmed')
+
+    def test_customer_cannot_confirm_own_booking(self):
+        self.client.login(username='cust1', password='testpass123')
+        self.client.post(f'/dashboard/bookings/{self.booking.id}/confirm/')
+        self.booking.refresh_from_db()
+        self.assertEqual(self.booking.status, 'pending')
+
+    def test_cancelled_booking_cannot_be_revived(self):
+        self.booking.status = 'cancelled'
+        self.booking.save()
+        self.client.login(username='owner1', password='testpass123')
+        self.client.post(f'/dashboard/bookings/{self.booking.id}/confirm/')
+        self.booking.refresh_from_db()
+        self.assertEqual(self.booking.status, 'cancelled')
+
+
+class CalendarTest(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='caluser', password='testpass123'
+        )
+        self.customer = Customer.objects.create(
+            user=self.user,
+            name='Calendar Customer',
+            email='cal@example.com',
+            phone='9876543288',
+            driving_license='CAL123'
+        )
+        self.vehicle = Vehicle.objects.create(
+            vehicle_type='car',
+            name='Calendar Car',
+            brand='Brand',
+            model='Model',
+            registration_number='CAL001',
+            price_per_day=1000,
+            is_available=True
+        )
+        self.client.login(username='caluser', password='testpass123')
+
+    def test_booked_days_do_not_include_return_day(self):
+        Booking.objects.create(
+            customer=self.customer,
+            vehicle=self.vehicle,
+            start_date='2027-07-10',
+            end_date='2027-07-13',
+            status='confirmed',
+            total_amount=3000
+        )
+
+        response = self.client.get(f'/vehicles/{self.vehicle.id}/book/')
+
+        self.assertEqual(
+            response.context['booked_ranges'],
+            [{'from': '2027-07-10', 'to': '2027-07-12'}]
+        )
+
+    def test_cancelled_booking_does_not_block_calendar(self):
+        Booking.objects.create(
+            customer=self.customer,
+            vehicle=self.vehicle,
+            start_date='2027-08-10',
+            end_date='2027-08-13',
+            status='cancelled',
+            total_amount=3000
+        )
+
+        response = self.client.get(f'/vehicles/{self.vehicle.id}/book/')
+
+        self.assertEqual(response.context['booked_ranges'], [])
